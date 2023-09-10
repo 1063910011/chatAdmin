@@ -16,7 +16,7 @@ interface DataType {
 
 export default function Qalog() {
   const [tableData, setTableData] = useState<DataType[]>([]);
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<any>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEditData, setCurrentEditData] = useState<DataType>();
 
