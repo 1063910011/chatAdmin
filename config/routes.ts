@@ -64,9 +64,16 @@ export default [
     component: './Textarea',
   },
   {
+    name: '问题日志',
+    icon: 'FileSearchOutlined',
+    path: '/qalog',
+    component: './Qalog',
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },
+
   {
     path: '*',
     layout: false,
