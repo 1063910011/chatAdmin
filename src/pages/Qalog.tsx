@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Popconfirm, Space, Table } from 'antd';
+import { Button, Modal, Popconfirm, Space, Table, message } from 'antd';
 
 const { Column } = Table;
 import ReactQuill from 'react-quill';
@@ -16,27 +16,24 @@ interface DataType {
 
 export default function Qalog() {
   const [tableData, setTableData] = useState<DataType[]>([]);
-  const [value, setValue] = useState<any>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [editContent, setEditContent] = useState<any>('');
   const [currentEditData, setCurrentEditData] = useState<DataType>();
 
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
+  const handleEditModalCancel = () => {
     setOpen(false);
-
+    setEditContent('');
+    setCurrentEditData({} as DataType);
     setConfirmLoading(false);
     setIsModalOpen(false);
   };
-
-  useEffect(() => {
+  const init = () => {
     // fetch('api/admin/qalog', {
-    fetch('http://127.0.0.1:8000/api/admin/qalog', {
+    fetch('http://127.0.0.1:8001/api/admin/qalog', {
       method: 'get',
 
       headers: {
@@ -45,28 +42,81 @@ export default function Qalog() {
     })
       .then((res) => res.json())
       .then(({ results }) => {
-        console.log(results);
         setTableData(results);
       });
+  };
+
+  useEffect(() => {
+    init();
   }, []);
   return (
     <div>
-      <Table dataSource={tableData} bordered rowKey="id">
-        <Column title="类型" dataIndex="type" key="type" align="center" width={10} />
-        {/* <Column title="用户" dataIndex="user" key="user" align="center" /> */}
-        <Column title="问题" dataIndex="q" key="q" align="center" />
-        <Column title="回答" dataIndex="a" key="a" align="center" />
+      <Table dataSource={tableData} bordered rowKey="id" size="middle">
+        <Column dataIndex="id" title="序号" width={75} align="center" />
         <Column
           title="提问时间"
+          align="center"
           dataIndex="create_at"
           key="create_at"
           render={(create_at: string) => <>{new Date(create_at).toLocaleString()}</>}
-          width={10}
+          width={100}
+        />
+        <Column title="类型" dataIndex="type" key="type" align="center" width={100} />
+        {/* <Column title="用户" dataIndex="user" key="user" align="center" /> */}
+        <Column
+          title="问题"
+          dataIndex="q"
+          key="q"
+          render={(q: string) => {
+            return (
+              <div
+                style={{
+                  maxHeight: '160px',
+                  overflow: 'auto',
+                }}
+                dangerouslySetInnerHTML={{ __html: q }}
+              ></div>
+            );
+          }}
+          width={350}
+          onHeaderCell={() => {
+            return {
+              style: {
+                textAlign: 'center',
+                backgroundColor: '#fafafa',
+              },
+            };
+          }}
+        />
+        <Column
+          title="回答"
+          dataIndex="a"
+          key="a"
+          render={(a: string) => {
+            return (
+              <div
+                style={{
+                  maxHeight: '160px',
+                  overflow: 'auto',
+                }}
+                dangerouslySetInnerHTML={{ __html: a }}
+              ></div>
+            );
+          }}
+          onHeaderCell={() => {
+            return {
+              style: {
+                textAlign: 'center',
+                backgroundColor: '#fafafa',
+              },
+            };
+          }}
         />
 
         <Column
           title="操作"
           key="action"
+          align="center"
           render={(row: any) => (
             <Space size="middle">
               <Button
@@ -75,7 +125,7 @@ export default function Qalog() {
                   // setValue()
                   console.log(row);
                   setCurrentEditData(row);
-                  setValue(row.a);
+                  setEditContent(row.a);
                   setIsModalOpen(true);
                 }}
               >
@@ -83,14 +133,14 @@ export default function Qalog() {
               </Button>
             </Space>
           )}
+          width={120}
         />
       </Table>
 
       <Modal
         title="修改回答"
         open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
+        onCancel={handleEditModalCancel}
         width={900}
         style={{
           height: '900px',
@@ -113,10 +163,10 @@ export default function Qalog() {
         <p>原回答:</p>
         <ReactQuill
           theme="snow"
-          value={value}
-          onChange={setValue}
+          value={editContent}
+          onChange={setEditContent}
           style={{
-            height: '600px',
+            height: '300px',
           }}
         />
         <div
@@ -131,12 +181,31 @@ export default function Qalog() {
             open={open}
             onConfirm={() => {
               setConfirmLoading(true);
-              console.log(value);
+              console.log(editContent);
+              fetch('http://127.0.0.1:8001/api/admin/update_a', {
+                method: 'post',
 
-              setTimeout(() => {
-                // setOpen(false);
-                setConfirmLoading(false);
-              }, 2000);
+                headers: {
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  id: currentEditData?.id,
+                  a: editContent,
+                }),
+              })
+                .then((res) => res.json())
+                .then((res) => {
+                  if (res.code === 0) {
+                    handleEditModalCancel();
+                    message.success('修改成功');
+                    init();
+                  }
+                })
+                .finally(() => {
+                  setTimeout(() => {
+                    setConfirmLoading(false);
+                  }, 500);
+                });
             }}
             okButtonProps={{ loading: confirmLoading }}
             onCancel={() => {
