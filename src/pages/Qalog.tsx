@@ -95,6 +95,7 @@ export default function Qalog() {
           title="回答"
           dataIndex="a"
           key="a"
+          width={500}
           render={(a: string) => {
             return (
               // <div
@@ -124,7 +125,41 @@ export default function Qalog() {
             };
           }}
         />
-
+        <Column
+          title="引用"
+          dataIndex="quote"
+          key="quote"
+          ellipsis={true}
+          render={(a: string) => {
+            return (
+              // <div
+              //   style={{
+              //     maxHeight: '160px',
+              //     overflow: 'auto',
+              //   }}
+              //   dangerouslySetInnerHTML={{ __html: a }}
+              // ></div>
+              <pre
+                style={{
+                  whiteSpace: 'break-spaces',
+                  textOverflow: 'ellipsis',
+                  maxHeight: '160px',
+                  overflow: 'auto',
+                }}
+              >
+                {a}
+              </pre>
+            );
+          }}
+          onHeaderCell={() => {
+            return {
+              style: {
+                textAlign: 'center',
+                backgroundColor: '#fafafa',
+              },
+            };
+          }}
+        />
         <Column
           title="操作"
           key="action"
