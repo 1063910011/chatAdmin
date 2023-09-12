@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Popconfirm, Space, Table, message } from 'antd';
+import { Button, Modal, Popconfirm, Space, Table, message, Input } from 'antd';
 
+const { TextArea } = Input;
 const { Column } = Table;
-import ReactQuill from 'react-quill';
+// import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 interface DataType {
@@ -13,6 +14,8 @@ interface DataType {
   a: string;
   create_at: string;
 }
+
+const API_HOST_URL = process.env.API_HOST_URL;
 
 export default function Qalog() {
   const [tableData, setTableData] = useState<DataType[]>([]);
@@ -33,7 +36,7 @@ export default function Qalog() {
   };
   const init = () => {
     // fetch('api/admin/qalog', {
-    fetch('http://127.0.0.1:8001/api/admin/qalog', {
+    fetch(API_HOST_URL + 'api/admin/qalog', {
       method: 'get',
 
       headers: {
@@ -78,7 +81,7 @@ export default function Qalog() {
               ></div>
             );
           }}
-          width={350}
+          width={250}
           onHeaderCell={() => {
             return {
               style: {
@@ -94,13 +97,22 @@ export default function Qalog() {
           key="a"
           render={(a: string) => {
             return (
-              <div
+              // <div
+              //   style={{
+              //     maxHeight: '160px',
+              //     overflow: 'auto',
+              //   }}
+              //   dangerouslySetInnerHTML={{ __html: a }}
+              // ></div>
+              <pre
                 style={{
+                  whiteSpace: 'break-spaces',
                   maxHeight: '160px',
                   overflow: 'auto',
                 }}
-                dangerouslySetInnerHTML={{ __html: a }}
-              ></div>
+              >
+                {a}
+              </pre>
             );
           }}
           onHeaderCell={() => {
@@ -161,14 +173,24 @@ export default function Qalog() {
           </span>
         </p>
         <p>原回答:</p>
-        <ReactQuill
+        <TextArea
+          value={editContent}
+          // onChange={setEditContent}
+          onChange={(v) => {
+            setEditContent(v.target.value);
+          }}
+          style={{
+            minHeight: '350px',
+          }}
+        />
+        {/* <ReactQuill
           theme="snow"
           value={editContent}
           onChange={setEditContent}
           style={{
             height: '300px',
           }}
-        />
+        /> */}
         <div
           style={{
             display: 'flex',
@@ -182,9 +204,8 @@ export default function Qalog() {
             onConfirm={() => {
               setConfirmLoading(true);
               console.log(editContent);
-              fetch('http://127.0.0.1:8001/api/admin/update_a', {
+              fetch(API_HOST_URL + 'api/admin/update_a', {
                 method: 'post',
-
                 headers: {
                   'content-type': 'application/json',
                 },
@@ -215,7 +236,7 @@ export default function Qalog() {
           >
             <Button
               style={{
-                marginTop: '60px',
+                marginTop: '30px',
               }}
               type="primary"
               size="large"
